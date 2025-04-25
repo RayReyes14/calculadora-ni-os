@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora de Goku para Niños</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive;
+      background-color: #ffeaa7;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+      color: #2d3436;
+    }
+
+    .mode-switcher {
+      margin: 20px;
+    }
+
+    .mode-switcher button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: #74b9ff;
+      color: white;
+    }
+
+    .calculator, .practice {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .active {
+      display: flex;
+    }
+
+    .display {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 24px;
+      margin: 20px 0;
+      box-shadow: inset 2px 2px 10px rgba(0,0,0,0.1);
+      width: 280px;
+      text-align: right;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      font-size: 20px;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      background-color: #74b9ff;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0984e3;
+    }
+
+    .equal {
+      background-color: #55efc4;
+    }
+
+    .equal:hover {
+      background-color: #00b894;
+    }
+
+    .clear {
+      background-color: #ff7675;
+    }
+
+    .clear:hover {
+      background-color: #d63031;
+    }
+
+    .goku {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .goku img {
+      width: 150px;
+    }
+
+    .goku p {
+      font-size: 20px;
+      color: #2d3436;
+      margin-top: 10px;
+    }
+
+    .practice-problem {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .points {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Calculadora de Goku</h1>
+
+  <div class="mode-switcher">
+    <button onclick="switchMode('calculator')">Modo Calculadora</button>
+    <button onclick="switchMode('practice')">Modo Práctica</button>
+  </div>
+
+  <div class="calculator active" id="calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button onclick="append('7')">7</button>
+      <button onclick="append('8')">8</button>
+      <button onclick="append('9')">9</button>
+      <button onclick="append('/')">÷</button>
+      <button onclick="append('4')">4</button>
+      <button onclick="append('5')">5</button>
+      <button onclick="append('6')">6</button>
+      <button onclick="append('*')">×</button>
+      <button onclick="append('1')">1</button>
+      <button onclick="append('2')">2</button>
+      <button onclick="append('3')">3</button>
+      <button onclick="append('-')">−</button>
+      <button onclick="append('0')">0</button>
+      <button onclick="append('.')">.</button>
+      <button class="equal" onclick="calculate()">=</button>
+      <button onclick="append('+')">+</button>
+      <button class="clear" onclick="clearDisplay()" style="grid-column: span 4;">C</button>
+    </div>
+    <div class="goku" id="goku-calc">
+      <img id="goku-img-calc" src="https://i.imgur.com/WKQHpVV.png" alt="Goku feliz">
+      <p id="goku-msg-calc">¡Usa la calculadora!</p>
+    </div>
+  </div>
+
+  <div class="practice" id="practice">
+    <div class="practice-problem" id="problem"></div>
+    <div class="display" id="answer">0</div>
+    <div class="buttons">
+      <button onclick="appendAnswer('7')">7</button>
+      <button onclick="appendAnswer('8')">8</button>
+      <button onclick="appendAnswer('9')">9</button>
+      <button onclick="appendAnswer('')" disabled></button>
+      <button onclick="appendAnswer('4')">4</button>
+      <button onclick="appendAnswer('5')">5</button>
+      <button onclick="appendAnswer('6')">6</button>
+      <button onclick="appendAnswer('-')">−</button>
+      <button onclick="appendAnswer('1')">1</button>
+      <button onclick="appendAnswer('2')">2</button>
+      <button onclick="appendAnswer('3')">3</button>
+      <button onclick="appendAnswer('+')">+</button>
+      <button onclick="appendAnswer('0')">0</button>
+      <button onclick="appendAnswer('.')">.</button>
+      <button class="equal" onclick="checkAnswer()">Verificar</button>
+      <button class="clear" onclick="clearAnswer()">Borrar</button>
+    </div>
+    <div class="points" id="points">Puntos: 0</div>
+    <div class="goku" id="goku-practice">
+      <img id="goku-img-practice" src="https://i.imgur.com/WKQHpVV.png" alt="Goku feliz">
+      <p id="goku-msg-practice">¡Resuelve el ejercicio!</p>
+    </div>
+  </div>
+
+  <script>
+    let currentAnswer = 0;
+    let score = 0;
+
+    function switchMode(mode) {
+      document.getElementById('calculator').classList.remove('active');
+      document.getElementById('practice').classList.remove('active');
+      document.getElementById(mode).classList.add('active');
+      if (mode === 'practice') generateProblem();
+    }
+
+    // Calculadora normal
+    function append(value) {
+      let display = document.getElementById('display');
+      let goku = document.getElementById('goku-calc');
+      goku.style.display = 'none';
+      if (display.innerText === '0') {
+        display.innerText = value;
+      } else {
+        display.innerText += value;
+      }
+    }
+
+    function clearDisplay() {
+      document.getElementById('display').innerText = '0';
+    }
+
+    function calculate() {
+      let display = document.getElementById('display');
+      let goku = document.getElementById('goku-calc');
+      let msg = document.getElementById('goku-msg-calc');
+      let img = document.getElementById('goku-img-calc');
+      try {
+        display.innerText = eval(display.innerText);
+        goku.style.display = 'block';
+        img.src = 'https://i.imgur.com/WKQHpVV.png';
+        msg.innerText = '¡Buen trabajo!';
+      } catch {
+        display.innerText = 'Error';
+        goku.style.display = 'block';
+        img.src = 'https://i.imgur.com/KnW8wsP.png';
+        msg.innerText = '¡Ups! Intenta otra vez';
+      }
+    }
+
+    // Modo práctica
+    function appendAnswer(value) {
+      let display = document.getElementById('answer');
+      if (display.innerText === '0') {
+        display.innerText = value;
+      } else {
+        display.innerText += value;
+      }
+    }
+
+    function clearAnswer() {
+      document.getElementById('answer').innerText = '0';
+    }
+
+    function generateProblem() {
+      let num1 = Math.floor(Math.random() * 10 + 1);
+      let num2 = Math.floor(Math.random() * 10 + 1);
+      let ops = ['+', '-', '*', '/'];
+      let op = ops[Math.floor(Math.random() * ops.length)];
+      if (op === '/' && num1 % num2 !== 0) {
+        num1 = num1 * num2;
+      }
+      currentAnswer = eval(`${num1} ${op} ${num2}`);
+      currentAnswer = Math.round(currentAnswer * 100) / 100;
+      document.getElementById('problem').innerText = `${num1} ${op} ${num2} = ?`;
+      document.getElementById('answer').innerText = '0';
+    }
+
+    function checkAnswer() {
+      let userAnswer = parseFloat(document.getElementById('answer').innerText);
+      let msg = document.getElementById('goku-msg-practice');
+      let img = document.getElementById('goku-img-practice');
+      let goku = document.getElementById('goku-practice');
+      if (Math.abs(userAnswer - currentAnswer) < 0.01) {
+        score++;
+        document.getElementById('points').innerText = `Puntos: ${score}`;
+        msg.innerText = '¡Correcto!';
+        img.src = 'https://i.imgur.com/WKQHpVV.png';
+        goku.style.display = 'block';
+        generateProblem();
+      } else {
+        msg.innerText = '¡Ups! Intenta otra vez';
+        img.src = 'https://i.imgur.com/KnW8wsP.png';
+        goku.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
